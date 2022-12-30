@@ -5,5 +5,7 @@
 #include "stft.h"
 
 __irq void ADC_ISR(void);
+__irq void TIMER_ISR(void);
+__irq void UART_ISR(void);
 
 #endif
