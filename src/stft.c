@@ -4,7 +4,6 @@
 #include <cmath>
 
 #define PI 3.14159
-#define BIN 16
 
 float* hanning_win(float* voltages, size_t size){
 	for(int i=0; i<size; i++){
@@ -54,8 +53,9 @@ CMPLX* FFT(CMPLX* input_sequence, size_t size){
 	return input_sequence;	
 }
 
-CMPLX* STFT(float voltages[MAX_SIZE], char window_char){
+CMPLX** STFT(float voltages[BIN_SIZE][MAX_SIZE], char window_char){
 	float* (*window)(float*, size_t);
+	CMPLX** freq_components = malloc(sizeof(CMPLX)*BIN_SIZE*MAX_SIZE);
 	
 	switch(window_char){
 		case 'n':
@@ -68,7 +68,10 @@ CMPLX* STFT(float voltages[MAX_SIZE], char window_char){
 			window = rectangular_win;
 	}
 	
-	for(int i=0; i<MAX_SIZE; i+=BIN){
-		
+	for(int i=0; i<BIN_SIZE; i++){
+		CMPLX* windowed_voltages = (CMPLX*)window(voltages[i], BIN_SIZE);
+		freq_components[i] = FFT(windowed_voltages, BIN_SIZE);
 	}
+	
+	return freq_components;
 }
