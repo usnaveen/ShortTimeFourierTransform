@@ -1,33 +1,47 @@
 #include "stft.h"
 #include <stdlib.h>
-#include <complex.h>
 #include <cmath>
 
+#undef I
+#define J _Imaginary_I
+#define K 1000
 #define PI 3.14159
 
-float* hanning_win(float* voltages, size_t size){
-	for(int i=0; i<size; i++){
-		voltages[i] = voltages[i]*(0.5 + 0.5*cos(PI*i/size));
+const CMPLX Wn[16] = { 
+	1000, 924-383*J, 707-707*J, 383-924*J, -1000*J, -383-924*J, -707-707*J, -924-383*J, -1000, 
+	-924 + 383*J, -707+707*J, -383+924*J, 1000*J, 383+924*J, 707+707*J, 924+383*J
+};
+
+const int hanning_values[MAX_SIZE] = {
+	1000, 990, 962, 916, 854, 778, 691, 598, 500, 402, 308, 222, 146, 84, 38, 10
+};
+
+const int hamming_values[MAX_SIZE] = {
+	1000, 991, 965, 922, 865, 796, 716, 630, 540, 450, 364, 284, 215, 158, 115, 89
+};
+
+const int blackman_values[MAX_SIZE] = {
+	1000, 984, 939, 866, 774, 667, 555, 444, 340, 249, 172, 112, 66, 35, 15, 4
+};
+
+void hanning_win(CMPLX voltages[MAX_SIZE]){
+	for(int i=0; i<MAX_SIZE; i++){
+		voltages[i] = voltages[i]*hanning_values[i];
 	}
-	return voltages;
 }
 
-float* hamming_win(float* voltages, size_t size){
-	for(int i=0; i<size; i++){
-		voltages[i] = voltages[i]*(0.54 + 0.46*cos(PI*i/size));
+void hamming_win(CMPLX voltages[MAX_SIZE]){
+	for(int i=0; i<MAX_SIZE; i++){
+		voltages[i] = voltages[i]*hamming_values[i];
 	}
-	return voltages;
 }
 
-float* rectangular_win(float* voltages, size_t size){
-	return voltages;
-}
+void rectangular_win(CMPLX voltages[MAX_SIZE]){ return; }
 
-float* blackman_win(float* voltages, size_t size){
-	for(int i=0; i<size; i++){
-		voltages[i] = voltages[i]*(0.42 + .5*cos(PI*i/size) + 0.08*cos(2*PI*i/size));
+void blackman_win(CMPLX voltages[MAX_SIZE]){
+	for(int i=0; i<MAX_SIZE; i++){
+		voltages[i] = voltages[i]*blackman_values[i];
 	}
-	return voltages;
 }
 
 CMPLX* FFT(CMPLX* input_sequence, size_t size){
@@ -43,35 +57,37 @@ CMPLX* FFT(CMPLX* input_sequence, size_t size){
 		CMPLX* even_complex = FFT(even_split, n);
 		CMPLX* odd_complex = FFT(odd_split, n);
 		
+		int d = 1;	
 		for(int i=0; i<n; i++){
-			CMPLX w = cexp(-2*I*PI*i/size);
-			input_sequence[i] = even_complex[i] + w*odd_complex[i];
-			input_sequence[i+n] = even_complex[i] - w*odd_complex[i];
+			if(size != 2){ d = K; }
+			input_sequence[i] = (even_complex[i]*K + Wn[i*MAX_SIZE/size]*odd_complex[i])/d;
+			input_sequence[i+n] = (even_complex[i]*K - Wn[i*MAX_SIZE/size]*odd_complex[i])/d;
 		}
 	}
 	
 	return input_sequence;	
 }
 
-CMPLX** STFT(float voltages[BIN_SIZE][MAX_SIZE], char window_char){
-	float* (*window)(float*, size_t);
-	CMPLX** freq_components = malloc(sizeof(CMPLX)*BIN_SIZE*MAX_SIZE);
+CMPLX* STFT(CMPLX voltages[MAX_SIZE], WINDOW window_char){
+	void (*window)(CMPLX[MAX_SIZE]);
 	
 	switch(window_char){
-		case 'n':
+		case HANNING:
 			window = hanning_win;
-		case 'm':
+			break;
+		case HAMMING:
 			window = hamming_win;
-		case 'b':
+			break;
+		case BLACKMAN:
 			window = blackman_win;
-		case 'r':
+			break;
+		case RECTANGULAR:
 			window = rectangular_win;
+			break;
 	}
+
+	window(voltages);
+	FFT(voltages, MAX_SIZE);
 	
-	for(int i=0; i<BIN_SIZE; i++){
-		CMPLX* windowed_voltages = (CMPLX*)window(voltages[i], BIN_SIZE);
-		freq_components[i] = FFT(windowed_voltages, BIN_SIZE);
-	}
-	
-	return freq_components;
+	return voltages;
 }
