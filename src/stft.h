@@ -2,12 +2,16 @@
 #define __STFT__
 
 #include <complex.h>
+#include <stdlib.h>
 
-#define MAX_SIZE 128
-#define BIN_SIZE 16
+#define MAX_SIZE 16
 
-typedef float complex CMPLX;
+typedef complex float CMPLX;
 
-CMPLX** STFT(float voltages[BIN_SIZE][MAX_SIZE], char window_char);
+typedef enum {
+	RECTANGULAR, HANNING, HAMMING, BLACKMAN
+}WINDOW;
+
+CMPLX* STFT(CMPLX voltages[MAX_SIZE], WINDOW window_char);
 
 #endif
