@@ -1,0 +1,4 @@
+Program execution time = 3 ms
+Minimum sampling time = 3 ms
+Maximum sampilng frequency = 333 Hz
+Therefore the allowed maximum input signal frequency < 333/2  ( 0 < f < 160 )
