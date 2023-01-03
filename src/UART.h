@@ -13,9 +13,9 @@ U0DLM = 0x00; //
 U0LCR = 0x03; // DLAB=0 , Allowing Tx Rx and stopping Baud rate change
 }
 
-void sendUART(unsigned char mydata)
+void sendUART(float data)
 {
-U0THR = mydata;
+U0THR = floorf(data*100);
 while((U0LSR & (0x01<< 5 ))==0); // THREmpty
 }
 
@@ -27,12 +27,12 @@ mydata = U0RBR;
 return mydata;
 }
 
-void printUART(unsigned char mydata[])
+void printUART(CMPLX* freq_components)
 {
 int i=0;
-while(mydata[i]!='\0')
+while(*freq_components!='\0')
 {
-sendUART(mydata[i]);
-i++;
+sendUART(cabsf(*freq_components));
+freq_components++;
 }
 }
