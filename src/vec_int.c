@@ -1,6 +1,7 @@
 #include "vec_int.h"
 #include <math.h>
 #include <stdlib.h>
+#include "UART.h"
 
 CMPLX voltages[MAX_SIZE];
 int counter = 0;
@@ -17,7 +18,7 @@ __irq void ADC_ISR(void){
 
 	if(counter == MAX_SIZE){  
 		CMPLX* freq_components = STFT(voltages, HANNING);
-
+		printUART(freq_components);
 		counter = 0;
 	}
 
