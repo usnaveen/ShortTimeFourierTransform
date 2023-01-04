@@ -15,8 +15,13 @@ U0LCR = 0x03; // DLAB=0 , Allowing Tx Rx and stopping Baud rate change
 
 void sendUART(float data)
 {
-U0THR = floorf(data*100);
-while((U0LSR & (0x01<< 5 ))==0); // THREmpty
+char str[];
+sprintf(str, "%d", floorf(data));
+int i=0;
+while(str[i]!="NULL"){
+  U0THR = str[i];
+  while((U0LSR & (0x01<< 5 ))==0); // THREmpty
+}
 }
 
 unsigned char receiveUART(void)
