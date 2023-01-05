@@ -86,7 +86,7 @@ int main(){
 	
 	
 	
-	PLL0CFG = 0x00; // CCLK = 60MHz, CCO = 240MHz
+	PLL0CFG = 0x24; // CCLK = 60MHz, CCO = 240MHz
 	PLL0CON = 0x1;    // turn on PLL 
 	PLL0FEED = 0xAA;  // feed sequence for changes to take effect
 	PLL0FEED = 0x55;
